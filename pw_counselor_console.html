@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PW Counselor Console — Bihar &amp; Jharkhand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F5FA; --surface:#FFFFFF; --ink:#14162B; --ink-soft:#5B5E7A; --ink-faint:#9497B3;
+    --primary:#4B3FE0; --primary-soft:#ECEAFB; --primary-dark:#332AA0;
+    --amber:#F5A623; --amber-soft:#FEF3DF; --amber-dark:#96690F;
+    --success:#1E9E6E; --success-soft:#E4F5EE;
+    --danger:#E0504F; --danger-soft:#FCEAEA;
+    --border:#E3E4EF;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+  .app{display:grid;grid-template-columns:230px 1fr;min-height:100vh;}
+  .sidebar{background:var(--ink);color:#fff;padding:26px 18px;display:flex;flex-direction:column;gap:26px;position:sticky;top:0;height:100vh;overflow:auto;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{width:34px;height:34px;border-radius:9px;background:var(--primary);display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:700;font-size:14px;flex-shrink:0;}
+  .brand-text{font-family:'Sora',sans-serif;font-weight:600;font-size:14px;line-height:1.25;}
+  .region-tag{font-size:11px;color:#9497B3;font-weight:500;margin-top:2px;}
+  .nav{display:flex;flex-direction:column;gap:2px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:8px;font-size:13px;font-weight:500;color:#C7C8DE;}
+  .nav-item.active{background:rgba(255,255,255,.08);color:#fff;}
+  .nav-dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.6;flex-shrink:0;}
+  .side-block{border-top:1px solid rgba(255,255,255,.1);padding-top:16px;}
+  .side-block h4{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#7B7E9E;margin:0 0 10px;font-weight:600;}
+  .legend-mini{display:flex;flex-direction:column;gap:7px;font-size:12px;color:#C7C8DE;}
+  .legend-mini span{display:flex;align-items:center;gap:8px;}
+  .legend-mini i{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+  .sidebar-foot{margin-top:auto;font-size:10.5px;color:#6C6E8C;line-height:1.6;}
+
+  .main{padding:26px 34px 60px;max-width:1220px;}
+  .topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;gap:16px;flex-wrap:wrap;}
+  .topbar h1{font-family:'Sora',sans-serif;font-size:21px;font-weight:600;margin:0 0 4px;}
+  .topbar p{margin:0;font-size:13px;color:var(--ink-soft);}
+  .top-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .role-switch{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:3px;gap:2px;}
+  .role-btn{border:none;background:transparent;padding:8px 15px;border-radius:8px;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;color:var(--ink-soft);cursor:pointer;}
+  .role-btn.active{background:var(--primary);color:#fff;}
+  .role-btn:not(.active):hover{background:var(--bg);}
+  select, input[type=text]{font-family:'Inter',sans-serif;font-size:12.5px;border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:8px 12px;color:var(--ink);}
+  select:focus, input:focus{outline:2px solid var(--primary-soft);border-color:var(--primary);}
+  .date-picker{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:12.5px;color:var(--ink-soft);}
+  .date-picker select{border:none;padding:0;background:transparent;font-weight:500;color:var(--ink);}
+
+  .view{display:none;}
+  .view.active{display:block;animation:fade .2s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+  .section-label{font-size:11.5px;font-weight:600;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;margin:0 0 12px;}
+
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
+  .kpi-label{font-size:12px;color:var(--ink-soft);font-weight:500;margin-bottom:8px;}
+  .kpi-value{font-family:'Sora',sans-serif;font-size:23px;font-weight:600;color:var(--ink);}
+  .kpi-delta{font-size:11.5px;font-weight:500;margin-top:6px;}
+  .up{color:var(--success);} .down{color:var(--danger);} .flat{color:var(--ink-faint);}
+
+  .dial-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+  .dial-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;align-items:center;gap:14px;}
+  .dial-info{flex:1;min-width:0;}
+  .dial-label{font-size:12px;color:var(--ink-soft);font-weight:500;margin-bottom:5px;}
+  .dial-value{font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;color:var(--ink);}
+  .dial-sub{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-faint);}
+  .dial-svg text{font-family:'IBM Plex Mono',monospace;font-weight:600;}
+
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:22px;}
+  .panel-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;gap:10px;flex-wrap:wrap;}
+  .panel-head h2{font-family:'Sora',sans-serif;font-size:15px;font-weight:600;margin:0;}
+  .panel-head span{font-size:11.5px;color:var(--ink-faint);}
+  .two-col{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{text-align:left;font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.03em;font-weight:600;padding:0 8px 9px;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;}
+  th:hover{color:var(--primary);}
+  td{padding:9px 8px;border-bottom:1px solid var(--border);color:var(--ink);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:var(--bg);}
+  .cname{font-weight:500;} .csub{font-size:11px;color:var(--ink-faint);}
+  .mono{font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .badge{display:inline-block;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+  .badge.ok{background:var(--success-soft);color:var(--success);}
+  .badge.risk{background:var(--amber-soft);color:var(--amber-dark);}
+  .badge.behind{background:var(--danger-soft);color:var(--danger);}
+  .mini-bar{width:56px;height:6px;border-radius:3px;background:var(--border);overflow:hidden;display:inline-block;vertical-align:middle;margin-right:6px;}
+  .mini-bar-fill{height:100%;border-radius:3px;}
+  .table-wrap{overflow-x:auto;}
+
+  .chart-wrap{position:relative;width:100%;height:230px;}
+  .chart-wrap.tall{height:300px;}
+  .legend{display:flex;gap:16px;font-size:11.5px;color:var(--ink-soft);margin-bottom:10px;flex-wrap:wrap;}
+  .legend span{display:flex;align-items:center;gap:6px;}
+  .dot{width:9px;height:9px;border-radius:2px;display:inline-block;}
+
+  .remark-box{background:var(--bg);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--ink-soft);line-height:1.6;}
+  .remark-box b{color:var(--ink);}
+
+  .filter-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+  .filter-bar input[type=text]{width:220px;}
+  .pill-toggle{display:flex;gap:6px;flex-wrap:wrap;}
+  .pill{border:1px solid var(--border);background:var(--surface);border-radius:20px;padding:6px 13px;font-size:11.5px;font-weight:500;color:var(--ink-soft);cursor:pointer;}
+  .pill.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+  .rank-card{display:flex;align-items:center;gap:16px;margin-bottom:16px;}
+  .rank-badge{width:52px;height:52px;border-radius:50%;background:var(--primary-soft);color:var(--primary);display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-size:18px;font-weight:700;flex-shrink:0;}
+
+  .stat-mini-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;}
+  .stat-mini{background:var(--bg);border-radius:10px;padding:10px 12px;}
+  .stat-mini .l{font-size:11px;color:var(--ink-faint);margin-bottom:4px;}
+  .stat-mini .v{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:var(--ink);}
+
+  @media (max-width:960px){
+    .app{grid-template-columns:1fr;} .sidebar{display:none;}
+    .kpi-row,.dial-row{grid-template-columns:repeat(2,1fr);}
+    .two-col{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">PW</div>
+      <div>
+        <div class="brand-text">Counselor<br>Console</div>
+        <div class="region-tag">Bihar &amp; Jharkhand</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active"><span class="nav-dot"></span>Overview</div>
+      <div class="nav-item"><span class="nav-dot"></span>Attendance</div>
+      <div class="nav-item"><span class="nav-dot"></span>Leaderboard</div>
+      <div class="nav-item"><span class="nav-dot"></span>Reports</div>
+      <div class="nav-item"><span class="nav-dot"></span>Settings</div>
+    </nav>
+    <div class="side-block">
+      <h4>Status legend</h4>
+      <div class="legend-mini">
+        <span><i style="background:#1E9E6E"></i>On track</span>
+        <span><i style="background:#F5A623"></i>Low input / booking</span>
+        <span><i style="background:#E0504F"></i>Low conversion</span>
+      </div>
+    </div>
+    <div class="sidebar-foot">Prototype build using<br>July 2026 review data.<br>73 counselors · 16 centers.</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="pageTitle">Region overview</h1>
+        <p id="pageSub">Bihar &amp; Jharkhand — all centers</p>
+      </div>
+      <div class="top-controls">
+        <div class="date-picker">
+          <span>Month</span>
+          <select id="monthPicker">
+            <option>July 2026</option>
+          </select>
+        </div>
+        <div class="role-switch">
+          <button class="role-btn" data-role="counselor">Counselor</button>
+          <button class="role-btn" data-role="manager">Manager</button>
+          <button class="role-btn active" data-role="leadership">Leadership</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ LEADERSHIP VIEW ============ -->
+    <div class="view active" id="view-leadership">
+      <p class="section-label">Region KPIs — July 2026</p>
+      <div class="kpi-row" id="lead-kpis"></div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>Achievement % by center</h2><span>Admissions vs target</span></div>
+        <div class="chart-wrap tall"><canvas id="centerBar" role="img" aria-label="Bar chart of achievement percentage by center"></canvas></div>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-head"><h2>Performance status split</h2><span>All 73 counselors</span></div>
+          <div class="chart-wrap"><canvas id="statusDonut" role="img" aria-label="Donut chart of counselor status distribution"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Top 5 counselors</h2><span>By achievement %</span></div>
+          <table>
+            <thead><tr><th>Name</th><th>Center</th><th>Ach.%</th></tr></thead>
+            <tbody id="topFive"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>All counselors</h2><span id="leadTableCount"></span></div>
+        <div class="filter-bar">
+          <input type="text" id="leadSearch" placeholder="Search name, email, or center...">
+          <select id="leadCenterFilter"><option value="">All centers</option></select>
+          <div class="pill-toggle" id="leadStatusFilter">
+            <div class="pill active" data-status="">All</div>
+            <div class="pill" data-status="On Track">On track</div>
+            <div class="pill" data-status="Low Input">Low input</div>
+            <div class="pill" data-status="Low Booking">Low booking</div>
+            <div class="pill" data-status="Low conversion">Low conversion</div>
+          </div>
+        </div>
+        <div class="table-wrap"><table id="leadTable">
+          <thead><tr>
+            <th data-key="name">Name</th><th data-key="center">Center</th><th data-key="workingDays">Days</th>
+            <th data-key="target">Target</th><th data-key="admissions">Admissions</th><th data-key="achievementPct">Ach.%</th>
+            <th data-key="dialledAvg">Dialled</th><th data-key="connectPct">Connect%</th><th data-key="b2bConvPct">B2B conv%</th>
+            <th data-key="eligibilityPct">Elig.%</th><th data-key="status">Status</th>
+          </tr></thead>
+          <tbody id="leadTableBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ============ MANAGER VIEW ============ -->
+    <div class="view" id="view-manager">
+      <div class="filter-bar">
+        <span class="section-label" style="margin:0;">Center</span>
+        <select id="managerCenterSelect"></select>
+      </div>
+
+      <div class="kpi-row" id="mgr-kpis"></div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>Counselor performance — <span id="mgrCenterName"></span></h2><span>July 2026</span></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Counselor</th><th>Days</th><th>Target</th><th>Admissions</th><th>Ach.%</th><th>Dialled</th><th>Connect%</th><th>Avg eff. TT</th><th>B2B conv%</th><th>Elig.%</th><th>Status</th></tr></thead>
+          <tbody id="mgrTableBody"></tbody>
+        </table></div>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-head"><h2>Admissions vs target</h2><span>By counselor</span></div>
+          <div class="chart-wrap"><canvas id="mgrBar" role="img" aria-label="Bar chart comparing admissions to target per counselor"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Needs attention</h2><span id="mgrFlagCount"></span></div>
+          <div id="mgrFlags"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ COUNSELOR VIEW ============ -->
+    <div class="view" id="view-counselor">
+      <div class="filter-bar">
+        <span class="section-label" style="margin:0;">Counselor</span>
+        <select id="counselorSelect"></select>
+      </div>
+
+      <p class="section-label">July 2026 performance</p>
+      <div class="dial-row" id="counselorDials"></div>
+
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-head"><h2>Call activity</h2><span>Monthly average, per working day</span></div>
+          <div class="chart-wrap"><canvas id="counselorRadar" role="img" aria-label="Bar chart comparing this counselor's key metrics to the center average"></canvas></div>
+          <div class="stat-mini-row" id="counselorStats"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Your rank</h2><span id="counselorRankSub"></span></div>
+          <div class="rank-card">
+            <div class="rank-badge" id="counselorRankBadge">#—</div>
+            <div>
+              <div style="font-weight:600;font-size:14px;" id="counselorRankName">—</div>
+              <div style="font-size:12px;color:var(--ink-soft);" id="counselorRankOf">—</div>
+            </div>
+          </div>
+          <div id="counselorPeers"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>Where to improve</h2><span>Manager feedback, July 2026</span></div>
+        <div class="remark-box" id="counselorRemark"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const DATA = [{"center":"Bhagalpur Vidyapeeth","name":"Sharique Anwer","email":"sharique.anwer@pw.live","empId":"PW22110","workingDays":29,"target":40,"admissions":34,"achievementPct":85.0,"dialledAvg":73,"connectedAvg":20,"connectPct":27,"avgTT":"0:54:03","avgTTsec":3243,"avgEffTT":"1:12:10","avgEffTTsec":4330,"avgB2B":114,"b2bConverted":19,"b2bConvPct":16.67,"eligibilityPct":76.92,"status":"On Track","remarks":"Need to increase B2B conversion & Eligibility"},{"center":"Bhagalpur Vidyapeeth","name":"Pratyush Kumar2","email":"pratyush.kumar2@pw.live","empId":"PW33563","workingDays":27,"target":30,"admissions":17,"achievementPct":56.67,"dialledAvg":74,"connectedAvg":11,"connectPct":15,"avgTT":"0:41:31","avgTTsec":2491,"avgEffTT":"0:50:57","avgEffTTsec":3057,"avgB2B":64,"b2bConverted":11,"b2bConvPct":17.19,"eligibilityPct":100.0,"status":"Low conversion","remarks":"56% achievement & Low effective TT & Low B2B conversion"},{"center":"Bhagalpur Vidyapeeth","name":"Saurav Kumar11","email":"saurav.kumar11@pw.live","empId":"PW33697","workingDays":28,"target":40,"admissions":18,"achievementPct":45.0,"dialledAvg":98,"connectedAvg":15,"connectPct":15,"avgTT":"0:43:21","avgTTsec":2601,"avgEffTT":"0:51:55","avgEffTTsec":3115,"avgB2B":73,"b2bConverted":15,"b2bConvPct":20.55,"eligibilityPct":78.57,"status":"Low conversion","remarks":"45% achievement & Low effective TT & Low B2B conversion"},{"center":"Bokaro Vidyapeeth","name":"Laxmi Kumari1","email":"laxmi.kumari1@pw.live","empId":"PW22813","workingDays":27,"target":20,"admissions":35,"achievementPct":175.0,"dialledAvg":84,"connectedAvg":13,"connectPct":15,"avgTT":"0:38:46","avgTTsec":2326,"avgEffTT":"1:00:26","avgEffTTsec":3626,"avgB2B":28,"b2bConverted":13,"b2bConvPct":46.43,"eligibilityPct":89.47,"status":"On Track","remarks":"0% B2B Conversion"},{"center":"Bokaro Vidyapeeth","name":"Mithilesh Roy","email":"mithilesh.roy@pw.live","empId":"PW22807","workingDays":29,"target":20,"admissions":15,"achievementPct":75.0,"dialledAvg":78,"connectedAvg":24,"connectPct":31,"avgTT":"0:30:26","avgTTsec":1826,"avgEffTT":"0:36:39","avgEffTTsec":2199,"avgB2B":53,"b2bConverted":24,"b2bConvPct":45.28,"eligibilityPct":83.33,"status":"On Track","remarks":"Low Effective TT & B2B conversion"},{"center":"Dhanbad Vidyapeeth","name":"Varsha Shrivastava","email":"varsha.shrivastava@pw.live","empId":"PW2001","workingDays":28,"target":14,"admissions":18,"achievementPct":128.57,"dialledAvg":98,"connectedAvg":9,"connectPct":9,"avgTT":"0:34:01","avgTTsec":2041,"avgEffTT":"0:43:39","avgEffTTsec":2619,"avgB2B":28,"b2bConverted":9,"b2bConvPct":32.14,"eligibilityPct":76.47,"status":"On Track","remarks":"Low Effective TT, B2B conversion & Eligibility"},{"center":"Dhanbad Vidyapeeth","name":"Ravi Prakash3","email":"ravi.prakash3@pw.live","empId":"PW18901","workingDays":28,"target":14,"admissions":13,"achievementPct":92.86,"dialledAvg":108,"connectedAvg":11,"connectPct":10,"avgTT":"0:44:19","avgTTsec":2659,"avgEffTT":"0:53:58","avgEffTTsec":3238,"avgB2B":49,"b2bConverted":11,"b2bConvPct":22.45,"eligibilityPct":100.0,"status":"On Track","remarks":"target missed with one no.,but overall performance is good"},{"center":"Dhanbad Vidyapeeth","name":"Suraj Gupta3","email":"suraj.gupta3@pw.live","empId":"PW23935","workingDays":26,"target":14,"admissions":19,"achievementPct":135.71,"dialledAvg":97,"connectedAvg":15,"connectPct":15,"avgTT":"0:16:45","avgTTsec":1005,"avgEffTT":"0:29:26","avgEffTTsec":1766,"avgB2B":32,"b2bConverted":15,"b2bConvPct":46.88,"eligibilityPct":85.0,"status":"On Track","remarks":"target achieved,Consistent performance,improvement area =TT and dialling"},{"center":"Jamshedpur Vidyapeeth","name":"Pw Jamshedpur Counsellors1 Fr","email":"pw_jamshedpur_counsellors1_fr@pw.live","empId":"PWFR6018","workingDays":28,"target":55,"admissions":33,"achievementPct":60.0,"dialledAvg":40,"connectedAvg":31,"connectPct":78,"avgTT":"0:21:36","avgTTsec":1296,"avgEffTT":"0:44:38","avgEffTTsec":2678,"avgB2B":53,"b2bConverted":32,"b2bConvPct":60.38,"eligibilityPct":93.75,"status":"On Track","remarks":"consistent performance..have potential can do much better"},{"center":"Jamshedpur Vidyapeeth","name":"Pw Jamshedpur Counsellors Fr","email":"pw_jamshedpur_counsellors_fr@pw.live","empId":"PWFR6026","workingDays":18,"target":55,"admissions":13,"achievementPct":23.64,"dialledAvg":43,"connectedAvg":10,"connectPct":23,"avgTT":"0:19:42","avgTTsec":1182,"avgEffTT":"0:32:12","avgEffTTsec":1932,"avgB2B":30,"b2bConverted":10,"b2bConvPct":33.33,"eligibilityPct":92.86,"status":"Low Input","remarks":"on leave from 24th july 2026"},{"center":"Motihari Vidyapeeth","name":"Pw Motihari Counsellors1 Fr","email":"pw_motihari_counsellors1_fr@pw.live","empId":"PWFR1MOT01","workingDays":29,"target":30,"admissions":10,"achievementPct":33.33,"dialledAvg":72,"connectedAvg":9,"connectPct":12,"avgTT":"0:25:44","avgTTsec":1544,"avgEffTT":"0:34:01","avgEffTTsec":2041,"avgB2B":77,"b2bConverted":10,"b2bConvPct":12.99,"eligibilityPct":27.27,"status":"On Track","remarks":"consistent performance, she joined as fresher but improving day by day and admission conversion is quitely good"},{"center":"Motihari Vidyapeeth","name":"Pw Motihari Counsellors Fr","email":"pw_motihari_counsellors_fr@pw.live","empId":"PWFR1MOTO1","workingDays":26,"target":35,"admissions":17,"achievementPct":48.57,"dialledAvg":9,"connectedAvg":10,"connectPct":109,"avgTT":"0:03:13","avgTTsec":193,"avgEffTT":"0:13:02","avgEffTTsec":782,"avgB2B":49,"b2bConverted":10,"b2bConvPct":20.41,"eligibilityPct":70.59,"status":"Low Input","remarks":"Very less calling input, not focused on work only a walking conversion ratio is little good"},{"center":"Muzaffarpur Vidyapeeth","name":"Rishabh Kumar5","email":"rishabh.kumar5@pw.live","empId":"PW16466","workingDays":28,"target":26,"admissions":16,"achievementPct":61.54,"dialledAvg":127,"connectedAvg":7,"connectPct":6,"avgTT":"0:48:07","avgTTsec":2887,"avgEffTT":"1:00:58","avgEffTTsec":3658,"avgB2B":66,"b2bConverted":7,"b2bConvPct":10.61,"eligibilityPct":91.3,"status":"Low Input","remarks":"Calling input is low, but the admission target is almost achieved. Improve calling consistency"},{"center":"Muzaffarpur Vidyapeeth","name":"Mausam Kumar1","email":"mausam.kumar1@pw.live","empId":"PW32698","workingDays":29,"target":26,"admissions":23,"achievementPct":88.46,"dialledAvg":94,"connectedAvg":18,"connectPct":19,"avgTT":"0:32:55","avgTTsec":1975,"avgEffTT":"0:36:32","avgEffTTsec":2192,"avgB2B":46,"b2bConverted":19,"b2bConvPct":41.3,"eligibilityPct":140.0,"status":"On Track","remarks":"Consistent performance overall. Calling needs slight improvement, but overall performance is good"},{"center":"Muzaffarpur Vidyapeeth","name":"Neha Tiwari1","email":"neha.tiwari1@pw.live","empId":"PW22900","workingDays":25,"target":26,"admissions":21,"achievementPct":80.77,"dialledAvg":107,"connectedAvg":13,"connectPct":12,"avgTT":"0:41:39","avgTTsec":2499,"avgEffTT":"0:57:15","avgEffTTsec":3435,"avgB2B":68,"b2bConverted":13,"b2bConvPct":19.12,"eligibilityPct":95.0,"status":"Low Input","remarks":"Calling input is low, but the admission target is almost achieved. Improve calling consistency"},{"center":"Muzaffarpur Vidyapeeth","name":"Sabita Hazarika","email":"sabita.hazarika@pw.live","empId":"PW34618","workingDays":28,"target":26,"admissions":25,"achievementPct":96.15,"dialledAvg":127,"connectedAvg":13,"connectPct":10,"avgTT":"1:12:17","avgTTsec":4337,"avgEffTT":"1:29:26","avgEffTTsec":5366,"avgB2B":75,"b2bConverted":13,"b2bConvPct":17.33,"eligibilityPct":51.85,"status":"On Track","remarks":"Target achieved consistently and delivers high-quality work. Maintains the best calling input across the team"},{"center":"Muzaffarpur Vidyapeeth","name":"Subham Giri","email":"subham.giri@pw.live","empId":"PW33041","workingDays":26,"target":26,"admissions":3,"achievementPct":11.54,"dialledAvg":129,"connectedAvg":7,"connectPct":5,"avgTT":"0:31:28","avgTTsec":1888,"avgEffTT":"0:33:11","avgEffTTsec":1991,"avgB2B":17,"b2bConverted":7,"b2bConvPct":41.18,"eligibilityPct":100.0,"status":"Low Input","remarks":"Poor calling performance with no admissions generated. Frequent unnecessary leave despite an extended probation period. Immediate improvement in performance and attendance is required"},{"center":"Patna - Ashiana Digha Vidyapeeth","name":"Sharafat 1","email":"sharafat.1@pw.live","empId":"PW15315","workingDays":27,"target":45,"admissions":29,"achievementPct":64.44,"dialledAvg":69,"connectedAvg":9,"connectPct":13,"avgTT":"0:24:30","avgTTsec":1470,"avgEffTT":"0:40:03","avgEffTTsec":2403,"avgB2B":48,"b2bConverted":10,"b2bConvPct":20.83,"eligibilityPct":89.66,"status":"On Track","remarks":""},{"center":"Patna - Ashiana Digha Vidyapeeth","name":"Archana Kumari1","email":"archana.kumari1@pw.live","empId":"PW19989","workingDays":25,"target":41,"admissions":25,"achievementPct":60.98,"dialledAvg":86,"connectedAvg":11,"connectPct":13,"avgTT":"0:30:59","avgTTsec":1859,"avgEffTT":"0:44:11","avgEffTTsec":2651,"avgB2B":43,"b2bConverted":11,"b2bConvPct":25.58,"eligibilityPct":88.89,"status":"On Track","remarks":""},{"center":"Patna - Ashiana Digha Vidyapeeth","name":"Nerali Raj","email":"nerali.raj@pw.live","empId":"PW16424","workingDays":25,"target":41,"admissions":32,"achievementPct":78.05,"dialledAvg":99,"connectedAvg":7,"connectPct":7,"avgTT":"0:17:45","avgTTsec":1065,"avgEffTT":"0:33:57","avgEffTTsec":2037,"avgB2B":29,"b2bConverted":8,"b2bConvPct":27.59,"eligibilityPct":96.15,"status":"Low Input","remarks":""},{"center":"Patna - Ashiana Digha Vidyapeeth","name":"Aman Raushan","email":"aman.raushan@pw.live","empId":"PW31099","workingDays":25,"target":41,"admissions":26,"achievementPct":63.41,"dialledAvg":73,"connectedAvg":11,"connectPct":15,"avgTT":"0:23:25","avgTTsec":1405,"avgEffTT":"0:40:13","avgEffTTsec":2413,"avgB2B":45,"b2bConverted":11,"b2bConvPct":24.44,"eligibilityPct":96.3,"status":"On Track","remarks":""},{"center":"Patna - Ashiana Digha Vidyapeeth","name":"Abhishek Verma5","email":"abhishek.verma5@pw.live","empId":"PW16535","workingDays":26,"target":41,"admissions":28,"achievementPct":68.29,"dialledAvg":82,"connectedAvg":14,"connectPct":17,"avgTT":"0:55:54","avgTTsec":3354,"avgEffTT":"1:14:22","avgEffTTsec":4462,"avgB2B":68,"b2bConverted":15,"b2bConvPct":22.06,"eligibilityPct":95.45,"status":"On Track","remarks":""},{"center":"Patna - Ashiana Digha Vidyapeeth","name":"Bhawana Dolly","email":"bhawana.dolly@pw.live","empId":"PW11238","workingDays":26,"target":41,"admissions":25,"achievementPct":60.98,"dialledAvg":80,"connectedAvg":13,"connectPct":16,"avgTT":"0:39:47","avgTTsec":2387,"avgEffTT":"0:59:24","avgEffTTsec":3564,"avgB2B":42,"b2bConverted":13,"b2bConvPct":30.95,"eligibilityPct":96.15,"status":"On Track","remarks":""},{"center":"Patna - Boring Road Vidyapeeth","name":"Irfan Khan1","email":"irfan.khan1@pw.live","empId":"PW31124","workingDays":26,"target":20,"admissions":23,"achievementPct":115.0,"dialledAvg":76,"connectedAvg":14,"connectPct":18,"avgTT":"0:45:58","avgTTsec":2758,"avgEffTT":"1:11:56","avgEffTTsec":4316,"avgB2B":65,"b2bConverted":14,"b2bConvPct":21.54,"eligibilityPct":80.0,"status":"On Track","remarks":"Target achieved. Good booking volume; focus on improving admission conversion"},{"center":"Patna - Boring Road Vidyapeeth","name":"Nishant Kumar6","email":"nishant.kumar6@pw.live","empId":"PW27422","workingDays":29,"target":20,"admissions":21,"achievementPct":105.0,"dialledAvg":81,"connectedAvg":17,"connectPct":21,"avgTT":"0:33:11","avgTTsec":1991,"avgEffTT":"1:00:05","avgEffTTsec":3605,"avgB2B":69,"b2bConverted":16,"b2bConvPct":23.19,"eligibilityPct":100.0,"status":"On Track","remarks":"Target achieved. Consistent performance; improve conversion efficiency"},{"center":"Patna - Boring Road Vidyapeeth","name":"Prerna Shree","email":"prerna.shree@pw.live","empId":"PW24676","workingDays":29,"target":15,"admissions":52,"achievementPct":346.67,"dialledAvg":52,"connectedAvg":19,"connectPct":36,"avgTT":"0:47:04","avgTTsec":2824,"avgEffTT":"1:21:13","avgEffTTsec":4873,"avgB2B":97,"b2bConverted":20,"b2bConvPct":20.62,"eligibilityPct":96.0,"status":"On Track","remarks":"Outstanding performance. Highest admissions and conversion in the centre"},{"center":"Patna - Boring Road Vidyapeeth","name":"Raushan Kumar9","email":"raushan.kumar9@pw.live","empId":"PW30836","workingDays":21,"target":15,"admissions":2,"achievementPct":13.33,"dialledAvg":92,"connectedAvg":0,"connectPct":0,"avgTT":"0:37:30","avgTTsec":2250,"avgEffTT":"0:41:04","avgEffTTsec":2464,"avgB2B":12,"b2bConverted":0,"b2bConvPct":0.0,"eligibilityPct":100.0,"status":"Low Input","remarks":"Significant gap against target. Increase bookings, follow-ups, and admission closures"},{"center":"Patna - Exhibition Rd Vidyapeeth","name":"Preeti Kumari1","email":"preeti.kumari1@pw.live","empId":"PW11145","workingDays":26,"target":35,"admissions":21,"achievementPct":60.0,"dialledAvg":78,"connectedAvg":13,"connectPct":17,"avgTT":"0:59:37","avgTTsec":3577,"avgEffTT":"1:08:17","avgEffTTsec":4097,"avgB2B":72,"b2bConverted":13,"b2bConvPct":18.06,"eligibilityPct":81.82,"status":"On Track","remarks":"Demonstrates strong work ethics, has been consistently reliable, and readily accepts new challenges with a positive attitude"},{"center":"Patna - Exhibition Rd Vidyapeeth","name":"Nidhi Singh3","email":"nidhi.singh3@pw.live","empId":"PW20113","workingDays":29,"target":35,"admissions":54,"achievementPct":154.29,"dialledAvg":67,"connectedAvg":24,"connectPct":36,"avgTT":"0:45:02","avgTTsec":2702,"avgEffTT":"1:04:41","avgEffTTsec":3881,"avgB2B":132,"b2bConverted":25,"b2bConvPct":18.94,"eligibilityPct":78.13,"status":"On Track","remarks":"Consistently delivers high-quality work and demonstrates a strong work ethic. Takes ownership of responsibilities and contributes positively to the team's success"},{"center":"Patna - Exhibition Rd Vidyapeeth","name":"Sweta Kumari1","email":"sweta.kumari1@pw.live","empId":"PW11724","workingDays":21,"target":35,"admissions":8,"achievementPct":22.86,"dialledAvg":82,"connectedAvg":10,"connectPct":12,"avgTT":"0:36:20","avgTTsec":2180,"avgEffTT":"0:45:37","avgEffTTsec":2737,"avgB2B":50,"b2bConverted":10,"b2bConvPct":20.0,"eligibilityPct":100.0,"status":"Low Input","remarks":"Requires increased dedication and a more proactive attitude toward work. Considerable improvement is needed in intent, accountability, and execution"},{"center":"Patna - Exhibition Rd Vidyapeeth","name":"Sameer Alam1","email":"sameer.alam1@pw.live","empId":"PW5014","workingDays":27,"target":35,"admissions":12,"achievementPct":34.29,"dialledAvg":38,"connectedAvg":28,"connectPct":73,"avgTT":"0:41:40","avgTTsec":2500,"avgEffTT":"0:59:26","avgEffTTsec":3566,"avgB2B":149,"b2bConverted":29,"b2bConvPct":19.46,"eligibilityPct":87.5,"status":"On Track","remarks":"Demonstrates strong work ethics, has been consistently reliable, and readily accepts new challenges with a positive attitude"},{"center":"Patna - Exhibition Rd Vidyapeeth","name":"Alok Tiwari2","email":"alok.tiwari2@pw.live","empId":"PW26864","workingDays":26,"target":35,"admissions":18,"achievementPct":51.43,"dialledAvg":68,"connectedAvg":12,"connectPct":18,"avgTT":"0:57:30","avgTTsec":3450,"avgEffTT":"1:11:55","avgEffTTsec":4315,"avgB2B":44,"b2bConverted":12,"b2bConvPct":27.27,"eligibilityPct":83.33,"status":"Low Booking","remarks":"Needs to demonstrate greater dedication toward work and be more willing to take on additional responsibilities to support team and organizational goals"},{"center":"Patna - Exhibition Rd Vidyapeeth","name":"Sunny Singh2","email":"sunny.singh2@pw.live","empId":"PW20257","workingDays":18,"target":35,"admissions":5,"achievementPct":14.29,"dialledAvg":42,"connectedAvg":2,"connectPct":5,"avgTT":"0:24:01","avgTTsec":1441,"avgEffTT":"0:31:31","avgEffTTsec":1891,"avgB2B":25,"b2bConverted":2,"b2bConvPct":8.0,"eligibilityPct":77.78,"status":"Low Booking","remarks":"Needs to improve attendance and better manage leave utilization, as frequent absences are directly impacting productivity and overall team performance"},{"center":"Patna - Exhibition Rd Vidyapeeth","name":"Saurav Kumar9","email":"saurav.kumar9@pw.live","empId":"PW31604","workingDays":29,"target":35,"admissions":25,"achievementPct":71.43,"dialledAvg":36,"connectedAvg":30,"connectPct":83,"avgTT":"0:22:07","avgTTsec":1327,"avgEffTT":"0:36:05","avgEffTTsec":2165,"avgB2B":103,"b2bConverted":28,"b2bConvPct":27.18,"eligibilityPct":88.46,"status":"On Track","remarks":"Consistently delivers high-quality work and demonstrates a strong work ethic. Takes ownership of responsibilities and contributes positively to the team's success"},{"center":"Patna - Exhibition Rd Vidyapeeth","name":"Shilpi Bharti","email":"shilpi.bharti@pw.live","empId":"PW11149","workingDays":20,"target":35,"admissions":10,"achievementPct":28.57,"dialledAvg":59,"connectedAvg":11,"connectPct":19,"avgTT":"0:27:20","avgTTsec":1640,"avgEffTT":"0:35:35","avgEffTTsec":2135,"avgB2B":34,"b2bConverted":12,"b2bConvPct":35.29,"eligibilityPct":83.33,"status":"Low conversion","remarks":"Resigned"},{"center":"Patna - Exhibition Rd Vidyapeeth","name":"Shubham Kumar15","email":"shubham.kumar15@pw.live","empId":"PW16565","workingDays":23,"target":35,"admissions":26,"achievementPct":74.29,"dialledAvg":19,"connectedAvg":10,"connectPct":52,"avgTT":"0:15:38","avgTTsec":938,"avgEffTT":"0:18:53","avgEffTTsec":1133,"avgB2B":25,"b2bConverted":11,"b2bConvPct":44.0,"eligibilityPct":80.0,"status":"Low Input","remarks":"Requires increased dedication and a more proactive attitude toward work. Considerable improvement is needed in intent, accountability, and execution"},{"center":"Patna - Exhibition Rd Vidyapeeth","name":"Shubham Parmar","email":"shubham.parmar@pw.live","empId":"PW35104","workingDays":26,"target":35,"admissions":12,"achievementPct":34.29,"dialledAvg":94,"connectedAvg":7,"connectPct":7,"avgTT":"0:41:23","avgTTsec":2483,"avgEffTT":"0:47:44","avgEffTTsec":2864,"avgB2B":27,"b2bConverted":7,"b2bConvPct":25.93,"eligibilityPct":85.71,"status":"On Track","remarks":"Demonstrates strong work ethics, has been consistently reliable, and readily accepts new challenges with a positive attitude"},{"center":"Patna - Iskcon Vidyapeeth","name":"Pooja Kumari5","email":"pooja.kumari5@pw.live","empId":"PW16338","workingDays":26,"target":28,"admissions":27,"achievementPct":96.43,"dialledAvg":126,"connectedAvg":16,"connectPct":13,"avgTT":"1:00:51","avgTTsec":3651,"avgEffTT":"1:10:05","avgEffTTsec":4205,"avgB2B":63,"b2bConverted":16,"b2bConvPct":25.4,"eligibilityPct":76.47,"status":"On Track","remarks":""},{"center":"Patna - Iskcon Vidyapeeth","name":"Ritu Kumari","email":"ritu.kumari@pw.live","empId":"PW15731","workingDays":25,"target":28,"admissions":16,"achievementPct":57.14,"dialledAvg":186,"connectedAvg":19,"connectPct":10,"avgTT":"0:59:42","avgTTsec":3582,"avgEffTT":"1:11:06","avgEffTTsec":4266,"avgB2B":101,"b2bConverted":19,"b2bConvPct":18.81,"eligibilityPct":100.0,"status":"On Track","remarks":""},{"center":"Patna - Iskcon Vidyapeeth","name":"Iqra Nabi","email":"iqra.nabi@pw.live","empId":"PW9248","workingDays":26,"target":30,"admissions":31,"achievementPct":103.33,"dialledAvg":102,"connectedAvg":26,"connectPct":26,"avgTT":"1:03:18","avgTTsec":3798,"avgEffTT":"1:20:02","avgEffTTsec":4802,"avgB2B":109,"b2bConverted":26,"b2bConvPct":23.85,"eligibilityPct":80.0,"status":"On Track","remarks":""},{"center":"Patna - Iskcon Vidyapeeth","name":"Simmy Kumari","email":"simmy.kumari@pw.live","empId":"PW11730","workingDays":27,"target":28,"admissions":7,"achievementPct":25.0,"dialledAvg":134,"connectedAvg":16,"connectPct":12,"avgTT":"0:56:53","avgTTsec":3413,"avgEffTT":"1:07:26","avgEffTTsec":4046,"avgB2B":63,"b2bConverted":17,"b2bConvPct":26.98,"eligibilityPct":92.86,"status":"On Track","remarks":""},{"center":"Patna - Iskcon Vidyapeeth","name":"Sameera Khan","email":"sameera.khan@pw.live","empId":"PW3774","workingDays":14,"target":28,"admissions":19,"achievementPct":67.86,"dialledAvg":125,"connectedAvg":11,"connectPct":9,"avgTT":"0:49:17","avgTTsec":2957,"avgEffTT":"1:09:38","avgEffTTsec":4178,"avgB2B":51,"b2bConverted":12,"b2bConvPct":23.53,"eligibilityPct":92.31,"status":"On Track","remarks":""},{"center":"Patna - Iskcon Vidyapeeth","name":"Nitish Kumar7","email":"Nitish.kumar7@pw.live","empId":"PW21377","workingDays":6,"target":30,"admissions":2,"achievementPct":6.67,"dialledAvg":1,"connectedAvg":0,"connectPct":0,"avgTT":"0:00:50","avgTTsec":50,"avgEffTT":"0:15:50","avgEffTTsec":950,"avgB2B":0,"b2bConverted":0,"b2bConvPct":0.0,"eligibilityPct":100.0,"status":"On Track","remarks":"Alligned in counselling"},{"center":"Patna - Iskcon Vidyapeeth","name":"Prince 1","email":"prince.1@pw.live","empId":"PW23109","workingDays":29,"target":30,"admissions":54,"achievementPct":180.0,"dialledAvg":4,"connectedAvg":0,"connectPct":0,"avgTT":"0:02:09","avgTTsec":129,"avgEffTT":"0:49:44","avgEffTTsec":2984,"avgB2B":0,"b2bConverted":0,"b2bConvPct":0.0,"eligibilityPct":89.41,"status":"On Track","remarks":"Alligned in counselling"},{"center":"Patna - Iskcon Vidyapeeth","name":"Archna Kumari","email":"archna.kumari@pw.live","empId":"PW8990","workingDays":14,"target":28,"admissions":0,"achievementPct":0.0,"dialledAvg":67,"connectedAvg":1,"connectPct":1,"avgTT":"0:26:18","avgTTsec":1578,"avgEffTT":"0:30:35","avgEffTTsec":1835,"avgB2B":7,"b2bConverted":1,"b2bConvPct":14.29,"eligibilityPct":100.0,"status":"On Track","remarks":"1st Emi Collection"},{"center":"Patna - Iskcon Vidyapeeth","name":"Shalini Sinha","email":"shalini.sinha@pw.live","empId":"PW24940","workingDays":27,"target":28,"admissions":25,"achievementPct":89.29,"dialledAvg":66,"connectedAvg":19,"connectPct":29,"avgTT":"0:53:15","avgTTsec":3195,"avgEffTT":"1:07:09","avgEffTTsec":4029,"avgB2B":65,"b2bConverted":22,"b2bConvPct":33.85,"eligibilityPct":78.57,"status":"On Track","remarks":""},{"center":"Patna - Iskcon Vidyapeeth","name":"Sumit Kumar22","email":"sumit.kumar22@pw.live","empId":"PW31659","workingDays":27,"target":30,"admissions":29,"achievementPct":96.67,"dialledAvg":70,"connectedAvg":17,"connectPct":24,"avgTT":"1:05:42","avgTTsec":3942,"avgEffTT":"1:24:02","avgEffTTsec":5042,"avgB2B":79,"b2bConverted":17,"b2bConvPct":21.52,"eligibilityPct":100.0,"status":"On Track","remarks":""},{"center":"Patna - Iskcon Vidyapeeth","name":"Arfeen 1","email":"arfeen.1@pw.live","empId":"PW31689","workingDays":26,"target":41,"admissions":36,"achievementPct":87.8,"dialledAvg":70,"connectedAvg":31,"connectPct":44,"avgTT":"1:24:51","avgTTsec":5091,"avgEffTT":"1:39:51","avgEffTTsec":5991,"avgB2B":74,"b2bConverted":32,"b2bConvPct":43.24,"eligibilityPct":91.3,"status":"On Track","remarks":""},{"center":"Patna - Iskcon Vidyapeeth","name":"Akash Mishra4","email":"akash.mishra4@pw.live","empId":"PW31821","workingDays":20,"target":28,"admissions":15,"achievementPct":53.57,"dialledAvg":37,"connectedAvg":7,"connectPct":19,"avgTT":"0:33:51","avgTTsec":2031,"avgEffTT":"0:42:06","avgEffTTsec":2526,"avgB2B":22,"b2bConverted":7,"b2bConvPct":31.82,"eligibilityPct":90.0,"status":"On Track","remarks":"1st Emi Collection"},{"center":"Patna - Iskcon Vidyapeeth","name":"Gaurav Kumar32","email":"gaurav.kumar32@pw.live","empId":"PW31315","workingDays":5,"target":30,"admissions":1,"achievementPct":3.33,"dialledAvg":4,"connectedAvg":0,"connectPct":0,"avgTT":"0:01:10","avgTTsec":70,"avgEffTT":"0:13:10","avgEffTTsec":790,"avgB2B":0,"b2bConverted":0,"b2bConvPct":0.0,"eligibilityPct":100.0,"status":"On Track","remarks":"Alligned in counselling"},{"center":"Patna - Iskcon Vidyapeeth","name":"Nidhi Sharma7","email":"nidhi.sharma7@pw.live","empId":"PW32703","workingDays":28,"target":28,"admissions":12,"achievementPct":42.86,"dialledAvg":175,"connectedAvg":17,"connectPct":10,"avgTT":"1:35:54","avgTTsec":5754,"avgEffTT":"1:45:33","avgEffTTsec":6333,"avgB2B":67,"b2bConverted":17,"b2bConvPct":25.37,"eligibilityPct":94.44,"status":"Low conversion","remarks":""},{"center":"Patna - Iskcon Vidyapeeth","name":"Dhananjay Kumar","email":"dhananjay.kumar@pw.live","empId":"PW31049","workingDays":19,"target":28,"admissions":3,"achievementPct":10.71,"dialledAvg":118,"connectedAvg":8,"connectPct":7,"avgTT":"1:42:48","avgTTsec":6168,"avgEffTT":"1:46:45","avgEffTTsec":6405,"avgB2B":46,"b2bConverted":8,"b2bConvPct":17.39,"eligibilityPct":60.0,"status":"Low Booking","remarks":""},{"center":"Patna - Kankarbagh Vidyapeeth","name":"Lovely Kumari3","email":"lovely.kumari3@pw.live","empId":"PW27479","workingDays":22,"target":20,"admissions":13,"achievementPct":65.0,"dialledAvg":87,"connectedAvg":4,"connectPct":5,"avgTT":"0:44:05","avgTTsec":2645,"avgEffTT":"1:10:41","avgEffTTsec":4241,"avgB2B":63,"b2bConverted":4,"b2bConvPct":6.35,"eligibilityPct":100.0,"status":"On Track","remarks":"Demonstrates strong work ethics, has been consistently reliable, and readily accepts new challenges with a positive attitude"},{"center":"Patna - Kankarbagh Vidyapeeth","name":"Abhash Sinha","email":"abhash.sinha@pw.live","empId":"PW22535","workingDays":28,"target":20,"admissions":21,"achievementPct":105.0,"dialledAvg":90,"connectedAvg":13,"connectPct":14,"avgTT":"1:02:13","avgTTsec":3733,"avgEffTT":"1:07:02","avgEffTTsec":4022,"avgB2B":76,"b2bConverted":13,"b2bConvPct":17.11,"eligibilityPct":71.43,"status":"On Track","remarks":"Demonstrates strong work ethics, has been consistently reliable, and readily accepts new challenges with a positive attitude"},{"center":"Patna Vidyapeeth (Residential Program)","name":"Ranveer Yadav","email":"ranveer.yadav@pw.live","empId":"PW32324","workingDays":25,"target":20,"admissions":14,"achievementPct":70.0,"dialledAvg":95,"connectedAvg":7,"connectPct":7,"avgTT":"1:15:46","avgTTsec":4546,"avgEffTT":"1:20:34","avgEffTTsec":4834,"avgB2B":41,"b2bConverted":7,"b2bConvPct":17.07,"eligibilityPct":114.29,"status":"On Track","remarks":"Efforts were appreciated, conversion numbers were not meeting expectations, improvment required in booking numbers & conversion"},{"center":"Patna Vidyapeeth (Residential Program)","name":"Ravi Sharma9","email":"ravi.sharma9@pw.live","empId":"PW31628","workingDays":25,"target":20,"admissions":17,"achievementPct":85.0,"dialledAvg":114,"connectedAvg":0,"connectPct":0,"avgTT":"1:04:37","avgTTsec":3877,"avgEffTT":"1:05:13","avgEffTTsec":3913,"avgB2B":20,"b2bConverted":0,"b2bConvPct":0.0,"eligibilityPct":0.0,"status":"On Track","remarks":"Efforts were appreciated, conversion numbers were not meeting expectations, improvment required in booking numbers & conversion"},{"center":"Patna Vidyapeeth (Residential Program)","name":"Durga Kumari","email":"durga.kumari@pw.live","empId":"PW31495","workingDays":24,"target":20,"admissions":13,"achievementPct":65.0,"dialledAvg":99,"connectedAvg":5,"connectPct":5,"avgTT":"1:11:36","avgTTsec":4296,"avgEffTT":"1:15:21","avgEffTTsec":4521,"avgB2B":37,"b2bConverted":5,"b2bConvPct":13.51,"eligibilityPct":125.0,"status":"On Track","remarks":"Efforts were appreciated, conversion numbers were not meeting expectations, improvment required in booking numbers & conversion"},{"center":"Ranchi - Harmu Vidyapeeth","name":"Gyan Himanshu","email":"gyan.himanshu@pw.live","empId":"PW17729","workingDays":28,"target":50,"admissions":26,"achievementPct":52.0,"dialledAvg":118,"connectedAvg":16,"connectPct":14,"avgTT":"0:21:24","avgTTsec":1284,"avgEffTT":"0:33:43","avgEffTTsec":2023,"avgB2B":57,"b2bConverted":16,"b2bConvPct":28.07,"eligibilityPct":91.67,"status":"Low Input","remarks":"Low Achievement, Effective TT & B2B conversions"},{"center":"Ranchi - Harmu Vidyapeeth","name":"Sweta Yadav","email":"sweta.yadav@pw.live","empId":"PW30622","workingDays":24,"target":50,"admissions":11,"achievementPct":22.0,"dialledAvg":148,"connectedAvg":7,"connectPct":5,"avgTT":"0:33:58","avgTTsec":2038,"avgEffTT":"0:40:50","avgEffTTsec":2450,"avgB2B":57,"b2bConverted":7,"b2bConvPct":12.28,"eligibilityPct":88.89,"status":"Low Input","remarks":"Low Achievement, Effective TT & B2B conversions"},{"center":"Ranchi - Harmu Vidyapeeth","name":"Akhil Mishra1","email":"akhil.mishra1@pw.live","empId":"PW23310","workingDays":26,"target":50,"admissions":20,"achievementPct":40.0,"dialledAvg":122,"connectedAvg":13,"connectPct":11,"avgTT":"0:20:19","avgTTsec":1219,"avgEffTT":"0:30:43","avgEffTTsec":1843,"avgB2B":50,"b2bConverted":14,"b2bConvPct":28.0,"eligibilityPct":83.33,"status":"Low Input","remarks":"Low Achievement, Effective TT & B2B conversions"},{"center":"Ranchi - Lalpur Vidyapeeth","name":"Adarsh Anand","email":"adarsh.anand@pw.live","empId":"PW22159","workingDays":24,"target":60,"admissions":47,"achievementPct":78.33,"dialledAvg":92,"connectedAvg":25,"connectPct":27,"avgTT":"0:21:42","avgTTsec":1302,"avgEffTT":"0:47:20","avgEffTTsec":2840,"avgB2B":77,"b2bConverted":26,"b2bConvPct":33.77,"eligibilityPct":73.68,"status":"On Track","remarks":""},{"center":"Ranchi - Lalpur Vidyapeeth","name":"Sachin Pandey1","email":"sachin.pandey1@pw.live","empId":"PW31849","workingDays":17,"target":60,"admissions":23,"achievementPct":38.33,"dialledAvg":76,"connectedAvg":14,"connectPct":18,"avgTT":"0:14:27","avgTTsec":867,"avgEffTT":"0:29:27","avgEffTTsec":1767,"avgB2B":37,"b2bConverted":14,"b2bConvPct":37.84,"eligibilityPct":88.24,"status":"Low Booking","remarks":""},{"center":"Ranchi - Lalpur Vidyapeeth","name":"Noora Ali","email":"noora.ali@pw.live","empId":"PW27310","workingDays":24,"target":60,"admissions":32,"achievementPct":53.33,"dialledAvg":70,"connectedAvg":28,"connectPct":40,"avgTT":"0:26:39","avgTTsec":1599,"avgEffTT":"0:47:16","avgEffTTsec":2836,"avgB2B":77,"b2bConverted":27,"b2bConvPct":35.06,"eligibilityPct":86.67,"status":"On Track","remarks":""},{"center":"Ranchi - Lalpur Vidyapeeth","name":"Muskan Kumari3","email":"muskan.kumari3@pw.live","empId":"PW34485","workingDays":23,"target":60,"admissions":12,"achievementPct":20.0,"dialledAvg":104,"connectedAvg":9,"connectPct":9,"avgTT":"0:29:10","avgTTsec":1750,"avgEffTT":"0:37:39","avgEffTTsec":2259,"avgB2B":52,"b2bConverted":9,"b2bConvPct":17.31,"eligibilityPct":83.33,"status":"Low Input","remarks":""},{"center":"Ranchi - Lalpur Vidyapeeth","name":"Vikrant Surwar","email":"vikrant.surwar@pw.live","empId":"PW31585","workingDays":25,"target":30,"admissions":30,"achievementPct":100.0,"dialledAvg":95,"connectedAvg":19,"connectPct":20,"avgTT":"0:25:19","avgTTsec":1519,"avgEffTT":"0:48:43","avgEffTTsec":2923,"avgB2B":76,"b2bConverted":20,"b2bConvPct":26.32,"eligibilityPct":74.29,"status":"On Track","remarks":""},{"center":"City OB","name":"Madhu Raj","email":"madhu.raj@pw.live","empId":"PW33401","workingDays":28,"target":25,"admissions":2,"achievementPct":8.0,"dialledAvg":162,"connectedAvg":2,"connectPct":1,"avgTT":"1:19:31","avgTTsec":4771,"avgEffTT":"1:19:31","avgEffTTsec":4771,"avgB2B":63,"b2bConverted":2,"b2bConvPct":3.17,"eligibilityPct":0.0,"status":"Low Input","remarks":"Low B2B conversion"},{"center":"City OB","name":"Nayna Kahate","email":"nayna.kahate@pw.live","empId":"PW24642","workingDays":14,"target":25,"admissions":0,"achievementPct":0.0,"dialledAvg":177,"connectedAvg":1,"connectPct":1,"avgTT":"1:26:35","avgTTsec":5195,"avgEffTT":"1:26:35","avgEffTTsec":5195,"avgB2B":32,"b2bConverted":1,"b2bConvPct":3.13,"eligibilityPct":0.0,"status":"Low conversion","remarks":"On Maternity Leave"},{"center":"City OB","name":"Ritika Singh4","email":"ritika.singh4@pw.live","empId":"PW24480","workingDays":26,"target":25,"admissions":1,"achievementPct":4.0,"dialledAvg":164,"connectedAvg":5,"connectPct":3,"avgTT":"1:22:13","avgTTsec":4933,"avgEffTT":"1:22:13","avgEffTTsec":4933,"avgB2B":87,"b2bConverted":5,"b2bConvPct":5.75,"eligibilityPct":0.0,"status":"On Track","remarks":""},{"center":"City OB","name":"Sarita Narayan","email":"sarita.narayan@pw.live","empId":"PW26321","workingDays":24,"target":25,"admissions":1,"achievementPct":4.0,"dialledAvg":119,"connectedAvg":4,"connectPct":3,"avgTT":"1:07:06","avgTTsec":4026,"avgEffTT":"1:07:06","avgEffTTsec":4026,"avgB2B":71,"b2bConverted":4,"b2bConvPct":5.63,"eligibilityPct":0.0,"status":"Low Input","remarks":"Low Effective TT"},{"center":"City OB","name":"Saurabh Bhadauria","email":"saurabh.bhadauria@pw.live","empId":"PW24486","workingDays":29,"target":25,"admissions":1,"achievementPct":4.0,"dialledAvg":148,"connectedAvg":7,"connectPct":5,"avgTT":"1:34:46","avgTTsec":5686,"avgEffTT":"1:34:46","avgEffTTsec":5686,"avgB2B":72,"b2bConverted":7,"b2bConvPct":9.72,"eligibilityPct":0.0,"status":"On Track","remarks":""},{"center":"Info Center","name":"Rajat Kumar11","email":"rajat.kumar11@pw.live","empId":"PW31499","workingDays":28,"target":25,"admissions":13,"achievementPct":52.0,"dialledAvg":144,"connectedAvg":1,"connectPct":1,"avgTT":"1:34:59","avgTTsec":5699,"avgEffTT":"1:36:36","avgEffTTsec":5796,"avgB2B":33,"b2bConverted":1,"b2bConvPct":3.03,"eligibilityPct":100.0,"status":"On Track","remarks":"Efforts were appreciated, conversion numbers were not meeting expectations, improvment required in booking numbers & conversion"},{"center":"Info Center","name":"Imran Nazir","email":"imran.nazir@pw.live","empId":"PW33491","workingDays":24,"target":25,"admissions":6,"achievementPct":24.0,"dialledAvg":98,"connectedAvg":1,"connectPct":1,"avgTT":"1:15:03","avgTTsec":4503,"avgEffTT":"1:16:56","avgEffTTsec":4616,"avgB2B":24,"b2bConverted":1,"b2bConvPct":4.17,"eligibilityPct":0.0,"status":"Low conversion","remarks":"Continuous gap in bookings, targets and calling input. Need to prioritize outreach and refine closing strategies to improve conversion and meet targets"},{"center":"Info Center","name":"Prince Kumar16","email":"prince.kumar16@pw.live","empId":"PW31687","workingDays":24,"target":25,"admissions":13,"achievementPct":52.0,"dialledAvg":92,"connectedAvg":5,"connectPct":5,"avgTT":"1:17:19","avgTTsec":4639,"avgEffTT":"1:23:34","avgEffTTsec":5014,"avgB2B":42,"b2bConverted":5,"b2bConvPct":11.9,"eligibilityPct":100.0,"status":"On Track","remarks":"Efforts were appreciated, conversion numbers were not meeting expectations, improvment required in booking numbers & conversion"}]
+;
+
+const COLORS = {primary:'#4B3FE0', amber:'#F5A623', success:'#1E9E6E', danger:'#E0504F', grid:'#E1E0D9', muted:'#9497B3'};
+const fmt = n => Math.round(n*10)/10;
+const money = false;
+
+function statusClass(s){
+  if(s === 'On Track') return 'ok';
+  if(s === 'Low conversion' || s === 'Low Conversion') return 'behind';
+  return 'risk';
+}
+function statusLabel(s){
+  const map = {'On Track':'On track','Low Input':'Low input','Low Booking':'Low booking','Low conversion':'Low conversion','Low Conversion':'Low conversion'};
+  return map[s] || s;
+}
+
+// ---------- Role / nav ----------
+const titles = {
+  counselor: ["My performance", "Individual view — select yourself below"],
+  manager: ["Team overview", "Center-level view — select a center below"],
+  leadership: ["Region overview", "Bihar & Jharkhand — all centers"]
+};
+document.querySelectorAll('.role-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+btn.dataset.role).classList.add('active');
+    document.getElementById('pageTitle').textContent = titles[btn.dataset.role][0];
+    document.getElementById('pageSub').textContent = titles[btn.dataset.role][1];
+  });
+});
+
+// ---------- Dial gauge ----------
+function drawDial(svg, pct, color, capAt150){
+  svg.innerHTML = '';
+  const shown = capAt150 ? Math.min(pct,1.5)/1.5 : Math.min(pct,1);
+  const r = 26, c = 32, circ = 2*Math.PI*r;
+  const track = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  track.setAttribute('cx',c);track.setAttribute('cy',c);track.setAttribute('r',r);
+  track.setAttribute('fill','none');track.setAttribute('stroke','#E3E4EF');track.setAttribute('stroke-width','6');
+  const fill = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  fill.setAttribute('cx',c);fill.setAttribute('cy',c);fill.setAttribute('r',r);
+  fill.setAttribute('fill','none');fill.setAttribute('stroke',color);fill.setAttribute('stroke-width','6');
+  fill.setAttribute('stroke-linecap','round');
+  fill.setAttribute('stroke-dasharray',circ);
+  fill.setAttribute('stroke-dashoffset', circ*(1-shown));
+  fill.setAttribute('transform',`rotate(-90 ${c} ${c})`);
+  const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+  text.setAttribute('x',c);text.setAttribute('y',c+4);text.setAttribute('text-anchor','middle');
+  text.setAttribute('font-size','11.5');text.setAttribute('fill','#14162B');
+  text.textContent = Math.round(pct*100)+'%';
+  svg.appendChild(track);svg.appendChild(fill);svg.appendChild(text);
+}
+
+// =====================================================================
+// LEADERSHIP VIEW
+// =====================================================================
+function renderLeadership(){
+  const totalTarget = DATA.reduce((a,c)=>a+c.target,0);
+  const totalAdm = DATA.reduce((a,c)=>a+c.admissions,0);
+  const achPct = (totalAdm/totalTarget*100);
+  const avgConnect = fmt(DATA.reduce((a,c)=>a+c.connectPct,0)/DATA.length);
+  const avgB2BConv = fmt(DATA.reduce((a,c)=>a+c.b2bConvPct,0)/DATA.length);
+  const onTrack = DATA.filter(c=>c.status==='On Track').length;
+
+  document.getElementById('lead-kpis').innerHTML = `
+    <div class="kpi-card"><div class="kpi-label">Total admissions (Jul)</div><div class="kpi-value">${totalAdm}</div><div class="kpi-delta flat">against target of ${totalTarget}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Region achievement</div><div class="kpi-value">${fmt(achPct)}%</div><div class="kpi-delta ${achPct>=100?'up':'down'}">${achPct>=100?'above':'below'} 100% target</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg connect rate</div><div class="kpi-value">${avgConnect}%</div><div class="kpi-delta flat">across ${DATA.length} counselors</div></div>
+    <div class="kpi-card"><div class="kpi-label">Counselors on track</div><div class="kpi-value">${onTrack}/${DATA.length}</div><div class="kpi-delta ${onTrack/DATA.length>0.6?'up':'down'}">${Math.round(onTrack/DATA.length*100)}% of team</div></div>
+  `;
+
+  const centers = [...new Set(DATA.map(c=>c.center))];
+  const centerAgg = centers.map(ct=>{
+    const rows = DATA.filter(c=>c.center===ct);
+    const t = rows.reduce((a,c)=>a+c.target,0), a = rows.reduce((a,c)=>a+c.admissions,0);
+    return {center: ct, pct: t? a/t*100 : 0};
+  }).sort((a,b)=>b.pct-a.pct);
+
+  new Chart(document.getElementById('centerBar'), {
+    type:'bar',
+    data:{ labels: centerAgg.map(c=>c.center), datasets:[{data: centerAgg.map(c=>fmt(c.pct)), backgroundColor: centerAgg.map(c=>c.pct>=100?COLORS.success:c.pct>=60?COLORS.amber:COLORS.danger), borderRadius:4, maxBarThickness:26}] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{ x:{beginAtZero:true, grid:{color:COLORS.grid}, ticks:{font:{size:10.5}, color:COLORS.muted, callback:v=>v+'%'}}, y:{grid:{display:false}, ticks:{font:{size:11}, color:'#14162B'}} } }
+  });
+
+  const statusCounts = {};
+  DATA.forEach(c=>{ const k = statusLabel(c.status); statusCounts[k] = (statusCounts[k]||0)+1; });
+  const labels = Object.keys(statusCounts);
+  const scolors = labels.map(l=> l==='On track'?COLORS.success : l==='Low conversion'?COLORS.danger : COLORS.amber);
+  new Chart(document.getElementById('statusDonut'), {
+    type:'doughnut',
+    data:{ labels, datasets:[{data:labels.map(l=>statusCounts[l]), backgroundColor:scolors, borderColor:'#fff', borderWidth:2}] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{font:{size:11}, color:'#5B5E7A', padding:12, boxWidth:10}}} }
+  });
+
+  const top5 = [...DATA].sort((a,b)=>b.achievementPct-a.achievementPct).slice(0,5);
+  document.getElementById('topFive').innerHTML = top5.map(c=>`<tr><td><div class="cname">${c.name}</div></td><td class="csub">${c.center}</td><td class="mono">${fmt(c.achievementPct)}%</td></tr>`).join('');
+
+  renderLeadTable();
+  populateCenterFilter();
+}
+
+function populateCenterFilter(){
+  const centers = [...new Set(DATA.map(c=>c.center))].sort();
+  const sel = document.getElementById('leadCenterFilter');
+  sel.innerHTML = '<option value="">All centers</option>' + centers.map(c=>`<option value="${c}">${c}</option>`).join('');
+}
+
+let leadSort = {key:'achievementPct', dir:-1};
+function renderLeadTable(){
+  const q = document.getElementById('leadSearch').value.toLowerCase();
+  const centerF = document.getElementById('leadCenterFilter').value;
+  const statusF = document.querySelector('#leadStatusFilter .pill.active').dataset.status;
+  let rows = DATA.filter(c=>{
+    const matchQ = !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.center.toLowerCase().includes(q);
+    const matchC = !centerF || c.center === centerF;
+    const matchS = !statusF || c.status === statusF;
+    return matchQ && matchC && matchS;
+  });
+  rows.sort((a,b)=> (a[leadSort.key] > b[leadSort.key] ? 1 : -1) * leadSort.dir);
+
+  document.getElementById('leadTableCount').textContent = rows.length + ' of ' + DATA.length;
+  document.getElementById('leadTableBody').innerHTML = rows.map(c=>`
+    <tr>
+      <td><div class="cname">${c.name}</div><div class="csub">${c.empId}</div></td>
+      <td class="csub">${c.center}</td>
+      <td class="mono">${c.workingDays}</td>
+      <td class="mono">${c.target}</td>
+      <td class="mono">${c.admissions}</td>
+      <td><span class="mini-bar"><span class="mini-bar-fill" style="width:${Math.min(c.achievementPct,100)}%;background:${c.achievementPct>=100?COLORS.success:c.achievementPct>=60?COLORS.amber:COLORS.danger}"></span></span><span class="mono">${fmt(c.achievementPct)}%</span></td>
+      <td class="mono">${c.dialledAvg}</td>
+      <td class="mono">${c.connectPct}%</td>
+      <td class="mono">${fmt(c.b2bConvPct)}%</td>
+      <td class="mono">${fmt(c.eligibilityPct)}%</td>
+      <td><span class="badge ${statusClass(c.status)}">${statusLabel(c.status)}</span></td>
+    </tr>`).join('');
+}
+document.getElementById('leadSearch').addEventListener('input', renderLeadTable);
+document.getElementById('leadCenterFilter').addEventListener('change', renderLeadTable);
+document.querySelectorAll('#leadStatusFilter .pill').forEach(p=>p.addEventListener('click', ()=>{
+  document.querySelectorAll('#leadStatusFilter .pill').forEach(x=>x.classList.remove('active'));
+  p.classList.add('active'); renderLeadTable();
+}));
+document.querySelectorAll('#leadTable th[data-key]').forEach(th=>th.addEventListener('click', ()=>{
+  const key = th.dataset.key;
+  leadSort.dir = (leadSort.key===key) ? -leadSort.dir : -1;
+  leadSort.key = key;
+  renderLeadTable();
+}));
+
+// =====================================================================
+// MANAGER VIEW
+// =====================================================================
+let mgrBarChart;
+function populateManagerSelect(){
+  const centers = [...new Set(DATA.map(c=>c.center))].sort();
+  document.getElementById('managerCenterSelect').innerHTML = centers.map(c=>`<option value="${c}">${c}</option>`).join('');
+}
+document.getElementById('managerCenterSelect').addEventListener('change', renderManager);
+
+function renderManager(){
+  const center = document.getElementById('managerCenterSelect').value;
+  const rows = DATA.filter(c=>c.center===center).sort((a,b)=>b.achievementPct-a.achievementPct);
+  document.getElementById('mgrCenterName').textContent = center;
+
+  const totalTarget = rows.reduce((a,c)=>a+c.target,0);
+  const totalAdm = rows.reduce((a,c)=>a+c.admissions,0);
+  const achPct = totalTarget ? totalAdm/totalTarget*100 : 0;
+  const avgConnect = fmt(rows.reduce((a,c)=>a+c.connectPct,0)/rows.length);
+  const atRisk = rows.filter(c=>c.status!=='On Track').length;
+
+  document.getElementById('mgr-kpis').innerHTML = `
+    <div class="kpi-card"><div class="kpi-label">Center admissions</div><div class="kpi-value">${totalAdm}</div><div class="kpi-delta flat">vs target ${totalTarget}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Center achievement</div><div class="kpi-value">${fmt(achPct)}%</div><div class="kpi-delta ${achPct>=100?'up':'down'}">${achPct>=100?'above':'below'} target</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg connect rate</div><div class="kpi-value">${avgConnect}%</div><div class="kpi-delta flat">${rows.length} counselors</div></div>
+    <div class="kpi-card"><div class="kpi-label">Needs attention</div><div class="kpi-value">${atRisk}</div><div class="kpi-delta ${atRisk?'down':'up'}">${atRisk? 'below on-track status' : 'all on track'}</div></div>
+  `;
+
+  document.getElementById('mgrTableBody').innerHTML = rows.map(c=>`
+    <tr>
+      <td><div class="cname">${c.name}</div><div class="csub">${c.empId}</div></td>
+      <td class="mono">${c.workingDays}</td>
+      <td class="mono">${c.target}</td>
+      <td class="mono">${c.admissions}</td>
+      <td><span class="mini-bar"><span class="mini-bar-fill" style="width:${Math.min(c.achievementPct,100)}%;background:${c.achievementPct>=100?COLORS.success:c.achievementPct>=60?COLORS.amber:COLORS.danger}"></span></span><span class="mono">${fmt(c.achievementPct)}%</span></td>
+      <td class="mono">${c.dialledAvg}</td>
+      <td class="mono">${c.connectPct}%</td>
+      <td class="mono">${c.avgEffTT}</td>
+      <td class="mono">${fmt(c.b2bConvPct)}%</td>
+      <td class="mono">${fmt(c.eligibilityPct)}%</td>
+      <td><span class="badge ${statusClass(c.status)}">${statusLabel(c.status)}</span></td>
+    </tr>`).join('');
+
+  if(mgrBarChart) mgrBarChart.destroy();
+  mgrBarChart = new Chart(document.getElementById('mgrBar'), {
+    type:'bar',
+    data:{ labels: rows.map(c=>c.name.split(' ')[0]),
+      datasets:[
+        {label:'Target', data: rows.map(c=>c.target), backgroundColor:'#E3E4EF', borderRadius:4, maxBarThickness:20},
+        {label:'Admissions', data: rows.map(c=>c.admissions), backgroundColor: COLORS.primary, borderRadius:4, maxBarThickness:20}
+      ] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{ y:{beginAtZero:true, grid:{color:COLORS.grid}, ticks:{font:{size:10.5}, color:COLORS.muted}}, x:{grid:{display:false}, ticks:{font:{size:10}, color:COLORS.muted, maxRotation:45}} } }
+  });
+
+  const flagged = rows.filter(c=>c.status!=='On Track');
+  document.getElementById('mgrFlagCount').textContent = flagged.length + ' flagged';
+  document.getElementById('mgrFlags').innerHTML = flagged.length ? flagged.map(c=>`
+    <div class="alert-item" style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;">
+      <div style="width:7px;height:7px;border-radius:50%;background:${c.status==='Low conversion'?COLORS.danger:COLORS.amber};margin-top:5px;flex-shrink:0;"></div>
+      <div><b>${c.name}</b> — ${statusLabel(c.status)}, ${fmt(c.achievementPct)}% of target.
+      <div style="color:var(--ink-soft);font-size:12px;margin-top:2px;">${c.remarks || 'No remarks logged this month.'}</div></div>
+    </div>`).join('') : '<p style="color:var(--ink-soft);font-size:13px;">No flags this month — full team on track.</p>';
+
+  populateCounselorSelect(center);
+}
+
+// =====================================================================
+// COUNSELOR VIEW
+// =====================================================================
+function populateCounselorSelect(preferCenter){
+  const sel = document.getElementById('counselorSelect');
+  const sorted = [...DATA].sort((a,b)=>a.name.localeCompare(b.name));
+  sel.innerHTML = sorted.map(c=>`<option value="${c.email}">${c.name} — ${c.center}</option>`).join('');
+  if(preferCenter){
+    const first = sorted.find(c=>c.center===preferCenter);
+    if(first) sel.value = first.email;
+  }
+}
+document.getElementById('counselorSelect').addEventListener('change', renderCounselor);
+
+let radarChart;
+function renderCounselor(){
+  const email = document.getElementById('counselorSelect').value;
+  const c = DATA.find(d=>d.email===email);
+  if(!c) return;
+
+  const dials = [
+    {label:'Achievement', value:c.achievementPct/100, sub:`${c.admissions} of ${c.target} target`, color: c.achievementPct>=100?COLORS.success:c.achievementPct>=60?COLORS.amber:COLORS.danger, cap:true},
+    {label:'Connect rate', value:c.connectPct/100, sub:`${c.connectedAvg} of ${c.dialledAvg} dialled`, color:COLORS.primary},
+    {label:'B2B conversion', value:c.b2bConvPct/100, sub:`${c.b2bConverted} of ${c.avgB2B} B2B`, color:COLORS.amber},
+    {label:'Eligibility', value:c.eligibilityPct/100, sub:'of connects eligible', color:COLORS.primary}
+  ];
+  document.getElementById('counselorDials').innerHTML = dials.map((d,i)=>`
+    <div class="dial-card">
+      <svg class="dial-svg" id="dial${i}" width="64" height="64" viewBox="0 0 64 64"></svg>
+      <div class="dial-info"><div class="dial-label">${d.label}</div><div class="dial-value">${fmt(d.value*100)}%</div><div class="dial-sub">${d.sub}</div></div>
+    </div>`).join('');
+  dials.forEach((d,i)=>drawDial(document.getElementById('dial'+i), d.value, d.color, d.cap));
+
+  const centerRows = DATA.filter(r=>r.center===c.center);
+  const centerAvg = key => centerRows.reduce((a,r)=>a+r[key],0)/centerRows.length;
+
+  if(radarChart) radarChart.destroy();
+  radarChart = new Chart(document.getElementById('counselorRadar'), {
+    type:'bar',
+    data:{ labels:['Dialled/day','Connected/day','Effective TT (min)','B2B conv%'],
+      datasets:[
+        {label:c.name, data:[fmt(c.dialledAvg/c.workingDays*10)/10, fmt(c.connectedAvg/c.workingDays*10)/10, fmt(c.avgEffTTsec/60), fmt(c.b2bConvPct)], backgroundColor: COLORS.primary, borderRadius:4, maxBarThickness:26},
+        {label:'Center avg', data:[fmt(centerAvg('dialledAvg')/c.workingDays*10)/10, fmt(centerAvg('connectedAvg')/c.workingDays*10)/10, fmt(centerAvg('avgEffTTsec')/60), fmt(centerAvg('b2bConvPct'))], backgroundColor:'#E3E4EF', borderRadius:4, maxBarThickness:26}
+      ] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:true, position:'bottom', labels:{font:{size:11}, color:'#5B5E7A', boxWidth:10}}},
+      scales:{ y:{beginAtZero:true, grid:{color:COLORS.grid}, ticks:{font:{size:10.5}, color:COLORS.muted}}, x:{grid:{display:false}, ticks:{font:{size:10.5}, color:COLORS.muted}} } }
+  });
+
+  document.getElementById('counselorStats').innerHTML = `
+    <div class="stat-mini"><div class="l">Working days</div><div class="v">${c.workingDays}</div></div>
+    <div class="stat-mini"><div class="l">Avg talk time</div><div class="v">${c.avgTT}</div></div>
+    <div class="stat-mini"><div class="l">Avg effective TT</div><div class="v">${c.avgEffTT}</div></div>
+  `;
+
+  const rankSorted = [...centerRows].sort((a,b)=>b.achievementPct-a.achievementPct);
+  const rank = rankSorted.findIndex(r=>r.email===c.email)+1;
+  document.getElementById('counselorRankBadge').textContent = '#'+rank;
+  document.getElementById('counselorRankName').textContent = c.name;
+  document.getElementById('counselorRankOf').textContent = `of ${centerRows.length} counselors — ${c.center}`;
+  document.getElementById('counselorRankSub').textContent = 'By achievement %, this center';
+  document.getElementById('counselorPeers').innerHTML = '<div class="rank-list" style="display:flex;flex-direction:column;gap:8px;">' +
+    rankSorted.slice(0,5).map((r,i)=>`
+      <div class="rank-row" style="display:flex;align-items:center;gap:10px;font-size:13px;${r.email===c.email?'background:var(--primary-soft);margin:0 -8px;padding:6px 8px;border-radius:8px;':''}">
+        <span style="width:18px;color:${r.email===c.email?'var(--primary-dark)':'var(--ink-faint)'};font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:${r.email===c.email?'600':'400'};">${String(i+1).padStart(2,'0')}</span>
+        <span style="flex:1;font-weight:${r.email===c.email?'600':'500'};color:${r.email===c.email?'var(--primary-dark)':'var(--ink)'};">${r.name}${r.email===c.email?' (you)':''}</span>
+        <span style="font-family:'IBM Plex Mono',monospace;color:var(--ink-soft);font-size:12.5px;">${fmt(r.achievementPct)}%</span>
+      </div>`).join('') + '</div>';
+
+  document.getElementById('counselorRemark').innerHTML = c.remarks
+    ? `<b>${statusLabel(c.status)}.</b> ${c.remarks}`
+    : `<b>${statusLabel(c.status)}.</b> No specific remarks logged by the manager this month.`;
+}
+
+// ---------- init ----------
+renderLeadership();
+populateManagerSelect();
+renderManager();
+</script>
+</body>
+</html>
